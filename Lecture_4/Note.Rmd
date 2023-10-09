@@ -1,0 +1,397 @@
+---
+title: "Lecture 4"
+author: "Kamal"
+date: "2023-09-29"
+output: pdf_document
+---
+
+# My file
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+## Demo
+
+### 0. Load the `tidyverse` Package
+
+This section loads the packages we need in this lecture.
+
+```{r}
+library(tidyverse)
+```
+
+### 1. Import and Export the V-Dem Data
+
+This section loads the VDEM dataset and describe its basic information
+
+```{r}
+d <- read_csv("/Users/kamalpathak/Desktop/Personal R /POLI3148_DaSPPA_Portfolio/_DataPublic_/vdem/1984_2022/vdem_1984_2022_external.csv")
+
+```
+
+### 2. Select economic development indicators
+
+First, we look at the identifiers of the data.
+
+```{r}
+names(d)
+```
+
+```{r}
+d |> # |> is officially called "pipe" it means passing down whatever in the previous step to the next step
+  select(country_name, country_id, year) |>
+  distinct() # distinct get rid of repetitions
+```
+
+```{r}
+# Which countries are in this dataset
+# Unique list of country names
+d |> select(country_name) |> distinct()
+```
+
+```{r}
+d |> select(year) |> distinct()
+```
+
+Select both the country identifiers, GDP, and GDP per capita.
+
+```{r}
+# cmd + shift + return runs everything within the chunk.
+# <- is "assign" - create a new dataframe.
+d_gdp <- d |> 
+  select(country_name, country_id, year, e_gdp, e_gdppc)
+
+d_gdp
+```
+
+### 3. Rename Columns to Make Names Informative
+
+```{r}
+# Rename columns
+# rename("new name" = "old name")
+d_gdp <- d_gdp |>
+  rename("GDP" = "e_gdp", "GDP_per_capita" = "e_gdppc",
+         "Country" = "country_name", "ID" = "country_id",
+         "Year" = "year")
+
+d_gdp # only for printing in Rmarkdown
+
+# # You can create new dataframe in step
+# d_gdp_2 <- d_gdp |>
+#   rename("GDP" = "e_gdp", "GDP_per_capita" = "e_gdppc",
+#          "Country" = "country_name", "ID" = "country_id",
+#          "Year" = "year")
+```
+
+### 4. `slice` Rows
+
+```{r}
+# Want countries-years with highest GDP
+d_gdp |> 
+  slice_max(order_by = GDP, n = 10)
+```
+
+```{r}
+# Get countries-years with the lowest GDP
+d_gdp |> slice_min(order_by = GDP, n = 10)
+```
+
+```{r}
+set.seed(52)
+d_gdp |> slice_sample(n = 10) # Sample 10 observations
+```
+
+```{r}
+set.seed(52)
+d_gdp |> slice_sample(prop = 0.1)
+```
+
+### 5. Subset data by row
+
+```{r}
+# Want: 2000-2005 data
+d_gdp |> filter(Year >= 2000 & Year <= 2008)
+```
+
+```{r}
+d_gdp |> filter(Country == "China")
+```
+
+```{r}
+# Want: 2000 - 2005 from China
+d_gdp |> 
+  filter(Year >= 2000 & Year <= 2005) |> 
+  filter(Country == "China")
+```
+
+### 6. Arrange
+
+```{r}
+# Want: sort the row by GDP per capita
+d_gdp |> arrange(GDP_per_capita) # smallest to largest
+```
+
+```{r}
+d_gdp |> arrange(-GDP_per_capita) # largest to smallest. minus sign
+```
+
+### 7, Perform (4) (5) (6) group by group: group_by, ungroup
+
+```{r}
+# We want the highest gdp for each country
+d_gdp |>
+  group_by(Country) |>
+  slice_max(GDP, n=1)
+```
+
+```{r}
+# How many entries for each country
+d_gdp |>
+  group_by(Country) |>
+  count()
+
+
+```
+
+```{r}
+# Worst GDP for each country, get the year
+d_gdp |> 
+  group_by(Country) |>
+  slice_min(order_by = GDP, n=1)
+  
+```
+
+```{r}
+# Best GDP
+d_gdp |> 
+  group_by(Country) |>
+  slice_max(order_by = GDP, n=1)
+  
+```
+
+### 8, Create new columns using mutate, group_by
+
+```{r}
+d_gdp |>
+  mutate(New=1)
+
+d_gdp |>
+  mutate(New=GDP)
+
+d_gdp |>
+  mutate(New=log(GDP))
+
+# Want new column to be GDP relative to average GDP in the world ( 1984-2022)
+d_gdp |>
+  mutate(GDP_over_average = GDP / mean(GDP, na.rm=TRUE))
+
+# Want new column to be GDP relative to average GDP of the country in the world ( 1984-2022)
+
+d_gdp |>
+  group_by(Country)|>
+  mutate(GDP_over_average = GDP / mean(GDP, na.rm=TRUE))
+
+
+```
+
+```{r}
+# Country-year development level with reference to that of 1984.
+d_gdp |>
+  group_by(Country) |>
+  arrange(Year) |>
+  mutate(GDP_over_1984 = GDP / first(GDP)) |>
+  ungroup() |>
+  arrange(Country, Year)
+```
+
+```{r}
+# Year on Year Economic Growth
+
+d_gdp |> 
+  group_by(Country) |>
+  arrange(Year) |>
+  mutate(GDP_yoy_change = GDP - lag(GDP, n=1)) |>
+  ungroup() |>
+  arrange(Country, Year)
+```
+
+### 9, Summarize the data : group_by, summarise, ungroup
+
+```{r}
+# Want: Average GDP level of the world
+
+d_gdp |>
+  summarise(
+    gdp_average = mean(GDP, na.rm=TRUE),
+    gdp_per_capita_average = mean(GDP_per_capita, na.rm=TRUE)
+    )
+
+
+```
+
+```{r}
+#Data Availability and  Integrity
+
+d_gdp |> 
+
+  #Craete a column that indicates whether the value is missing
+  mutate(GDP_missing = as.numeric(is.na(GDP)), .after= GDP) |>
+  group_by(Country) |>
+  summarise(N_GDP_missing = sum(GDP_missing))
+  
+```
+
+```{r}
+# Average Development Level
+
+d_gdp |>
+  group_by(Country) |>
+  summarise(GDP_average = mean(GDP, na.rm = TRUE))
+
+```
+
+```{r}
+#GDP growth and GDP per capita growth: 2019 over 1984
+
+d_gdp |>
+  filter(Year >= 1984 & Year <= 2019) |>
+  group_by(Country) |>
+  arrange(Year) |>
+  summarise(GDP_growth_2019_1984 = (last(GDP) - first(GDP)) / first(GDP),
+            GDPpc_growth_2019_1984 = (last(GDP_per_capita) - first(GDP_per_capita)) / first(GDP_per_capita)) |>
+  ungroup() |>
+  arrange(Country)
+```
+
+# Homework
+
+### Step 1 **Coodbook Lookup**
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+d <- read_csv("/Users/kamalpathak/Desktop/Personal R /POLI3148_DaSPPA_Portfolio/_DataPublic_/vdem/1984_2022/vdem_1984_2022_external.csv")
+```
+
+Question: How unequal is the level of education achieved by the population aged 15 years and older?
+
+Citation: Clio Infra (clio-infra.eu), Years: 1984-2010
+
+Question: What is the average years of education among citizens older than 15? Clarification: The Average years of education in the total population aged 15 years and older.
+
+Citation: Clio Infra (clio-infra.eu) Years: 1984-2022
+
+### Step 2 **Subset by columns**
+
+```{r}
+names(d)
+```
+
+```{r}
+d_edu <- d |> 
+  select(country_name, , year, e_peaveduc, e_peedgini)
+
+d_edu
+```
+
+```{r}
+d_edu <- d_edu |>
+  rename("Edu_15" = "e_peaveduc", "Edu_Ineq" = "e_peedgini",
+         "Country" = "country_name", 
+         "Year" = "year")
+
+d_edu
+```
+
+### Step 3 **Subset by rows**
+
+```{r}
+d_edu |> slice_max(order_by = Edu_15, n = 5)
+
+
+```
+
+```{r}
+
+d_edu |> slice_min(order_by = Edu_Ineq, n = 5)
+
+```
+
+### Step 4 **Summarize the data**
+
+```{r}
+# Data Availability
+
+d_edu |> 
+
+  #Create a column that indicates whether the value is missing
+  mutate(Edu_missing = as.numeric(is.na(Edu_15)), .after= Edu_15) |>
+  group_by(Country, Year) |>
+  summarise(N_Edu_missing = sum(Edu_missing))
+```
+
+```{r}
+#Average level of education quality from 1984 to 2022
+
+
+d_edu |>
+  summarise(
+    edu_average = mean(Edu_15, na.rm=TRUE),
+    edu_ineq_average = mean(Edu_Ineq, na.rm=TRUE)
+)
+
+
+```
+
+```{r}
+#Change of education quality from 1984 to 2022
+d_edu |>
+  group_by(Country) |>
+  arrange(Year) |>
+  mutate(Edu_over_1984 = Edu_15 / first(Edu_15)) |>
+  ungroup() |>
+  arrange(Country, Year)
+
+
+```
+
+```{r}
+# The average education quality by country
+average_edu <- d_edu |>
+  group_by(Country) |>
+  summarise(edu_average = mean(Edu_15, na.rm = TRUE)) |>
+  arrange(desc(edu_average))
+
+# The country with the best average education quality
+best_country <- average_edu|>
+  slice(1)
+
+```
+
+### Step 4B
+
+```{r}
+# Eduaction average quality 
+average_edu <- d_edu |>
+  group_by(Country) |>
+  summarise(edu_average = mean(Edu_15, na.rm = TRUE)) |>
+  arrange((edu_average))
+
+# The country with the best average education quality
+worst_country <- average_edu|>
+  slice(-1)
+
+
+# Its Niger ( WORST EDU quality ) 
+```
