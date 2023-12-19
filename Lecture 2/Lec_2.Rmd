@@ -1,0 +1,334 @@
+```{r}
+2+ 2
+
+log(1) # 0
+
+log10(1) # 0
+
+sqrt(16) # 4
+
+8^2.  # 64
+
+```
+
+# Lesson 2 
+
+### 2.2 Objects in R \-\-\--
+
+```{r}
+## Numeric object 
+
+my_obj <- 48
+
+my_obj <- 36
+
+my_obj
+
+print(my_obj) # 36
+```
+
+###  Character objects 
+
+```{r}
+obj_character <- "R is cool"
+
+obj_character_2 <- 'R is cool'
+
+obj_character_3 <- "R's cool"
+
+print(obj_character_3)
+# "R's cool"
+```
+
+## \# Remove objects 
+
+```{r}
+# Remove a single object
+
+rm(my_obj)
+
+# Remove all the objects 
+rm(list = ls())
+```
+
+## \# 2.3 Vector 
+
+#### Basic functions applied to vectors 
+
+```{r}
+## Basic functions applied to vectors 
+
+my_vec <- c(2, 3, 1, 6, 4, 3, 3, 7)
+
+my_vec
+
+mean(my_vec)
+
+var(my_vec) # variance
+
+sd(my_vec) 
+
+length(my_vec) # how many chrcters
+```
+
+#### Create sequences
+
+```{r}
+## Create sequences ----
+
+#A sequence of numbers from 1 to 10.
+my_seq <- 1:10
+
+
+my_seq_revers <- 10:1
+
+
+# A sequence of numbers starting from 1 and ending at 5,with increments of 0.5 between each number.
+my_seq_advanced <- seq(from = 1, to = 5, by = 0.5)
+
+
+my_seq_advanced <- seq(from = 0, to = 3, by = 0.3)
+
+my_seq_advanced
+```
+
+#### Create repetition
+
+```{r}
+
+#A sequence of the number 2 repeated 10 times.
+#2 2 2 2 2 2 2 2 2 2
+my_seq_rep <- rep(2, times = 10)
+
+
+my_seq_rep
+
+
+# A sequence of numbers from 1 to 5 repeated 10 times.
+my_seq_rep <- rep(1:5, times = 10)
+
+my_seq_rep
+```
+
+#### Missing values
+
+```{r}
+
+
+temp <- c(1, 2, 3, NA)
+
+temp
+
+# NA is the indicator of missing values in R
+
+mean(temp)
+
+mean(temp, na.rm = TRUE)
+
+# na.rm stands for NA remove
+
+#------------------------------
+
+
+# Getting Help ----
+
+?mean
+```
+
+###  Chapter 3: Data in R 
+
+#### Numeric 
+
+```{r}
+
+
+obj_numeric <- 4.3
+
+class(obj_numeric) #numeric
+
+typeof(obj_numeric) # double
+
+is.numeric(obj_numeric) # TRUE
+```
+
+#### Integer 
+
+```{r}
+
+obj_numeric_2 <- 4L
+
+class(obj_numeric_2) # integer
+
+typeof(obj_numeric_2)
+
+is.integer(obj_numeric_2)
+
+```
+
+####  Logical 
+
+```{r}
+obj_logical <- TRUE
+
+obj_logical <- T
+
+obj_logical <- FALSE
+
+obj_logical <- F
+
+is.logical(obj_logical)
+```
+
+####  Character 
+
+```{r}
+obj_character <- "R is cool"
+
+is.character(obj_character)
+
+
+```
+
+#### Coersion 
+
+```{r}
+obj_to_change <- c("1", "3", "missing", "4", "5")
+
+mean(obj_to_change)
+
+obj_changed <- as.numeric(obj_to_change)
+
+obj_changed # 1  3 NA  4  5
+```
+
+####  List 
+
+```{r}
+list_1 <- list(
+
+c("black", "orange", "yellow"),
+
+c(T, F),
+
+matrix(1:6, nrow = 3)
+
+)
+
+list_1
+
+list_1[[2]]
+
+list_2 <- list(
+
+color = c("black", "orange", "yellow"),
+
+truth = c(T, F),
+
+mat = matrix(1:6, nrow = 3)
+
+)
+
+list_2
+
+list_2$color
+
+list_3 <- list(
+
+color = c("black", "orange", "yellow"),
+
+truth = c(T, F, T)
+
+)
+
+as.data.frame(list_3)
+```
+
+#### Explaination of what's going on with list
+
+#### \<!\--# list_1 is like a bag with three things inside: a list of colors (black, orange, yellow), a list of true and false values, and a grid of numbers arranged in rows and columns.
+
+list_1[[2]] means taking out the second thing from the bag, which is the list of true and false values.
+
+list_2 is another bag, but this time the things inside have names. It has a list of colors (black, orange, yellow), a list of true and false values, and a grid of numbers arranged in rows and columns.
+
+list_2\$color means taking out the thing named "color" from the bag, which is the list of colors.
+
+list_3 is a bag with two things inside: a list of colors (black, orange, yellow), and a list of true and false values.
+
+as.data.frame(list_3) is like rearranging the things in the bag into a table-like format.
+
+\--\>
+
+####  Data Frame
+
+```{r}
+p.height <- c(180, 155, 160, 167, 181)
+
+p.weight <- c(65, 60, 52, 58, 70)
+
+p.names <- c("Joanna", "Charlotte", "Helen", "karen", "Amy")
+
+dataf <- data.frame(height = p.height,
+
+weight = p.weight,
+
+names = p.names)
+
+summary(dataf)
+
+names(dataf)
+
+dim(dataf)
+
+summary(dataf$height)
+
+summary(dataf$weight)
+
+summary(dataf$names)
+
+table(dataf$names)
+```
+
+#### Explainations about the above data frame 
+
+##### Imagine we have a group of 5 people. We know their heights, weights, and names.
+
+##### We can write down their heights in a list: 180, 155, 160, 167, 181.
+
+##### We can also write down their weights: 65, 60, 52, 58, 70.
+
+##### And we can write down their names: Joanna, Charlotte, Helen, Karen, Amy.
+
+##### Now, we can put all this information together in a special table called a data frame.
+
+##### The data frame is like a big table where each person has their own row, and each piece of information (height, weight, name) has its own column.
+
+##### We can summarize this table to get some information about the whole group. 
+
+##### For example, we can see the minimum and maximum height and weight, the average height and weight, and some other useful statistics.
+
+##### We can also see the names of the columns in our table, which are "height", "weight", and "names".
+
+##### We can know how many rows and columns our table has by checking its dimensions.
+
+##### We can also get specific summaries for each column. For example, we can see the minimum and maximum height, weight, and the names.
+
+##### 
+
+Lastly, we can count how many times each name appears in our table using the "table" function.
+
+### Get to specific locations of a data frame
+
+```{r}
+### Row 1
+
+dataf[1, ]
+
+### Column 2
+
+dataf[, 2]
+
+### Cell at row 1, column 2
+
+dataf[1, 2]
+```

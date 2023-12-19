@@ -1,0 +1,421 @@
+---
+title: "Untitled"
+author: "Kamal"
+date: "2023-10-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## 1, Loading Packages
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+d <- read_csv("/Users/kamalpathak/Desktop/POLI3148_DaSPPA_Portfolio/_DataPublic_/vdem/1984_2022/vdem_1984_2022_external.csv")
+
+
+
+
+```
+
+## 2, GDP and GDP per capita
+
+```{r}
+
+d_gdp <- d |> 
+  select(country_text_id, year, e_gdp, e_gdppc) |>
+  rename("gdp" = "e_gdp", "gdppc" = "e_gdppc")
+
+d_gdp |> print(n = 3)
+
+# print(n=3) function is used to display the first three rows of the dataset d_gdp
+
+```
+
+## 3, Table \-- Wide to Long
+
+```{r}
+
+d_gdp_long <- d_gdp |>
+  pivot_longer(cols = c("gdp", "gdppc"), 
+               names_to = "variable", values_to = "value")
+
+d_gdp_long |> print(n = 7)
+
+
+# print(n=7) function is used to display the first seven rows of the dataset d_gdp_long
+
+```
+
+## 4, Table--- Long to Wide
+
+```{r}
+
+d_gdp_wide_1 <- d_gdp_long |>
+  pivot_wider(names_from = "variable", values_from = "value")
+
+d_gdp_wide_1 |> print(n = 4)
+
+
+```
+
+## 5, Make year the column variable ( wider )
+
+```{r}
+
+d_gdp_wide_2 <- d_gdp_long |>
+  pivot_wider(names_from = "year", values_from = "value")
+
+d_gdp_wide_2 |> print(n = 2)
+
+```
+
+## 6, Make the country_text_id column variable ( wider )
+
+```{r}
+
+d_gdp_wide_3 <- d_gdp_long |>
+  pivot_wider(names_from = "country_text_id", values_from = "value")
+
+d_gdp_wide_3 |> print(n = 2)
+
+```
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
+
+## Load New DATA
+
+```{r}
+
+d_gdp_1945 <- 
+   read_csv("/Users/kamalpathak/Desktop/POLI3148_DaSPPA_Portfolio/_DataPublic_/vdem/1945_1983/vdem_1945_1983_external.csv") |>
+  select(country_text_id, year, e_gdp, e_gdppc) |>
+  rename("gdp" = "e_gdp", "gdppc" = "e_gdppc")
+
+
+
+d_gdp_1906 <- 
+  read_csv("/Users/kamalpathak/Desktop/POLI3148_DaSPPA_Portfolio/_DataPublic_/vdem/1906_1944/vdem_1906_1944_external.csv") |>
+  select(country_text_id, year, e_gdp, e_gdppc) |>
+  rename("gdp" = "e_gdp", "gdppc" = "e_gdppc")
+
+
+
+
+d_gdp_1945 |> print(n = 4) 
+
+```
+
+## Stack Data Horizontally
+
+```{r}
+
+d_edu <- d |>
+  select(e_peaveduc, e_peedgini) |>
+  rename("edu_15" = "e_peaveduc", "edu_gini" = "e_peedgini")
+
+d_fh <- d |>
+  select(starts_with("e_fh")) |>
+  rename("fh_CivilLiberty" = "e_fh_cl", "fh_PoliticalRight" = "e_fh_pr",
+         "fh_RuleOfLaw" = "e_fh_rol", "fh_Status" = "e_fh_status")
+
+d_fh |> print(n = 2)
+
+
+
+```
+
+## Bind Rows
+
+```{r}
+
+d_gdp_1945_2022 <- bind_rows(d_gdp, d_gdp_1945)
+d_gdp_1945_2022 |> print(n = 3)
+
+unique(d_gdp_1945_2022$year) |> sort()
+
+```
+
+```{r}
+
+#  Bind_rows can take multiple data frames
+d_gdp_1906_2022 <- bind_rows(d_gdp, d_gdp_1945, d_gdp_1906) 
+
+
+d_gdp_1906_2022 |> print(n = 3)
+
+
+unique(d_gdp_1906_2022$year) |> sort()
+
+```
+
+## Binding Columns
+
+```{r}
+
+d_gdp_edu_fh <- bind_cols(d_gdp, d_edu, d_fh) 
+d_gdp_edu_fh |> print(n = 3)
+
+
+names(d_gdp_edu_fh)
+
+
+
+```
+
+Only use `bind_rows` and `bind_cols` WHEN you know for sure that there will not be a mismatch!
+
+# Join Tables
+
+```{r}
+
+
+d_gdp_2000_2022 <- d |> filter(year %in% 2000:2022) |>
+  select(country_text_id, year, e_gdp) |> rename("gdp" = "e_gdp")
+
+d_gdppc_1984_2010 <- d |> filter(year %in% 1984:2010) |>
+  select(country_text_id, year, e_gdppc) |> rename("gdppc" = "e_gdppc")
+
+d_gdp_2000_2022 |> print(n = 2)
+
+d_gdppc_1984_2010 |> print(n = 2)
+
+```
+
+## left_join
+
+```{r}
+ # Merge and only keep observations whose identifiers (matching keys) appear in the left-hand-side table.
+
+
+d_lj <- d_gdp_2000_2022 |> 
+  left_join(d_gdppc_1984_2010, by = c("country_text_id", "year"))
+
+d_lj |> print(n = 2)
+
+
+unique(d_lj$year) |> sort()
+
+
+
+
+
+```
+
+## `right_join`
+
+```{r}
+
+#Merge and only keep observations whose identifiers (matching keys) appear in the right-hand-side table.
+
+d_rj <- d_gdp_2000_2022 |> 
+  right_join(d_gdppc_1984_2010, by = c("country_text_id", "year"))
+
+d_rj |> print(n = 2)
+
+
+unique(d_rj$year) |> sort()
+
+```
+
+## inner_join
+
+```{r}
+
+# Merge and only keep observations whose identifiers (matching keys) appear in both tables.
+
+
+d_ij <- d_gdp_2000_2022 |> 
+  inner_join(d_gdppc_1984_2010, by = c("country_text_id", "year"))
+
+d_ij |> print(n = 2)
+
+
+
+
+unique(d_ij$year) |> sort()
+
+```
+
+## full_join
+
+```{r}
+# Merge and keep observations whose identifiers (matching keys) appear either table.
+
+
+d_fj <- d_gdp_2000_2022 |> 
+  full_join(d_gdppc_1984_2010, by = c("country_text_id", "year"))
+
+d_fj |> print(n = 2)
+
+
+
+
+unique(d_fj$year) |> sort()
+
+
+```
+
+## Anti-join
+
+```{r}
+# Filter out observations whose identifiers (matching keys) appear in the right-hand-side table
+
+
+d_aj <- d_gdp_2000_2022 |> 
+  anti_join(d_gdppc_1984_2010, by = c("country_text_id", "year"))
+
+d_aj |> print(n = 5)
+
+
+unique(d_aj$year) |> sort()
+
+```
+
+## Semi-Join
+
+```{r}
+
+# Filter out observations whose identifiers (matching keys) do not appear in the right-hand-side table
+
+
+d_sj <- d_gdp_2000_2022 |> 
+  semi_join(d_gdppc_1984_2010, by = c("country_text_id", "year"))
+
+d_sj |> print(n = 6)
+
+
+unique(d_sj$year) |> sort()
+
+```
+
+# Join by Identifiers with Different Variable Names
+
+```{r}
+
+
+d_gdppc_1984_2010_t <- d_gdppc_1984_2010 |> 
+  rename("country_id" = "country_text_id")
+
+```
+
+## Option 1 : Rename the variables beforehand
+
+```{r}
+
+
+d_aj_t <- d_gdp_2000_2022 |> 
+  rename("country_id" = "country_text_id") |>
+  anti_join(d_gdppc_1984_2010_t, by = c("country_id", "year"))
+
+
+```
+
+## 
+
+## Option 2: Specify the "by =" argument with a \*named vector\*
+
+```{r}
+
+d_aj_t_2 <- d_gdp_2000_2022 |> 
+  anti_join(d_gdppc_1984_2010_t, 
+            by = c("country_text_id" = "country_id", 
+                   "year" = "year"))
+
+```
+
+# Many-to-One Join: Repeat!
+
+```{r}
+
+d_gdppc_1984_2010_avg <- d_gdppc_1984_2010 |> group_by(country_text_id) |>
+  summarise(gdppc_1984to2010 = mean(gdppc, na.rm = TRUE))
+d_gdppc_1984_2010_avg |> print(n = 2)
+
+
+```
+
+```{r}
+
+d_lj_ManyToOne <- d_gdp_2000_2022 |> 
+  left_join(d_gdppc_1984_2010_avg, by = "country_text_id")
+d_lj_ManyToOne |> print(n = 2)
+
+```
+
+# Good Habits
+
+```{r}
+
+# The d_gdp_2000_2022 data are from V-Dem
+d_gdp_2000_2022_t <- d_gdp_2000_2022 |> mutate(source_vdem = 1)
+
+# *Pretend* that the d_gdppc_1984_2010 data are from the World Bank
+d_gdppc_1984_2010_t <- d_gdppc_1984_2010 |> mutate(source_wb = 1)
+
+d_fj_habit <- d_gdp_2000_2022_t |> 
+  full_join(d_gdppc_1984_2010_t, by = c("country_text_id", "year"))
+
+d_fj_habit |> print(n = 3)
+
+```
+
+## Overlap Multiple Sources
+
+```{r}
+
+d_fj_habit |>
+  group_by(source_vdem, source_wb) |>
+  count()
+```
+
+## Add prefix or suffix to variable names
+
+```{r}
+
+# rename_at(vars(-c("country_text_id", "year")), ~str_c("vdem_", .))
+
+d_gdp_2000_2022_rn <- d_gdp_2000_2022 |> 
+  rename("vdem_gdp" = "gdp")
+  
+
+ # rename_at(vars(-c("country_text_id", "year")), ~str_c("wb_", .))
+d_gdppc_1984_2010_rn <- d_gdppc_1984_2010 |> 
+  rename("wb_gdppc" = "gdppc")
+ 
+
+d_fj_habit_2 <- d_gdp_2000_2022_rn |>
+  full_join(d_gdppc_1984_2010_rn, by = c("country_text_id", "year"))
+
+d_fj_habit_2 |> print(n = 3)
+
+
+
+
+
+```
